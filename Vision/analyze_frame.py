@@ -54,19 +54,19 @@ if __name__ == "__main__":
     from camera import Camera
     camera = Camera(0)
     
-    # cv2.namedWindow("All Masks", cv2.WINDOW_NORMAL)
-    # cv2.setWindowProperty("All Masks", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    cv2.namedWindow("All Masks", cv2.WINDOW_NORMAL)
+    cv2.setWindowProperty("All Masks", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
     print("Starting frame analysis loop...")
-    # first_run = True
-    # all_masks_display = None
+    first_run = True
+    all_masks_display = None
 
-    # font = cv2.FONT_HERSHEY_SIMPLEX
-    # font_scale = 0.5
-    # font_color = (0, 255, 0) 
-    # line_type = 1
-    # text_offset_x = 5
-    # text_offset_y = 15
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 0.5
+    font_color = (0, 255, 0) 
+    line_type = 1
+    text_offset_x = 5
+    text_offset_y = 15
 
     while True:
         frame_hsv = camera.get_frame()
@@ -90,8 +90,8 @@ if __name__ == "__main__":
         
         cv2.imshow("Live Feed (HSV input, BGR display)", frame_display_bgr)
         
-        # mask_h_display, mask_s_display, mask_v_display = get_target_masks(frame_hsv)
-        # final_mask_display = cv2.bitwise_and(mask_h_display, cv2.bitwise_and(mask_s_display, mask_v_display))
+        mask_h_display, mask_s_display, mask_v_display = get_target_masks(frame_hsv)
+        final_mask_display = cv2.bitwise_and(mask_h_display, cv2.bitwise_and(mask_s_display, mask_v_display))
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
