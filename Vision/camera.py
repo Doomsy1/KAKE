@@ -4,11 +4,18 @@ from picamera2 import Picamera2 # type: ignore
 import time
 
 class Camera:
-    HORZONTAL_FOV = 55.28168977
-    VERTICAL_FOV = 32.82769798
+    DIAGONAL_FOV = 62
+    # HORZONTAL_FOV = 55.28168977
+    # VERTICAL_FOV = 32.82769798
 
-    HORZONTAL_RES = 1920 // 2
-    VERTICAL_RES = 1080 // 2
+    HORZONTAL_FOV = 51.0
+    VERTICAL_FOV = 39.6
+
+    # HORZONTAL_RES = 1280
+    # VERTICAL_RES = 720
+
+    HORZONTAL_RES = 640
+    VERTICAL_RES = 480
 
     FPS = 30 * 2
     
@@ -17,6 +24,7 @@ class Camera:
         self.camera = Picamera2(index)
         self.camera.configure(self.camera.create_video_configuration(main={"size": (self.HORZONTAL_RES, self.VERTICAL_RES)}))
         self.camera.start()
+        # self.camera.set_controls({"ExposureTime": 5000}) 
         time.sleep(0.1) # warmup
 
     def get_frame(self):
