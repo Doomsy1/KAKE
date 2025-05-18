@@ -1,3 +1,5 @@
+# Artificial Intelligence was used in this file to : debug errors, and get boilerplate code
+
 import cv2
 import numpy as np
 from picamera2 import Picamera2 # type: ignore

@@ -1,3 +1,5 @@
+# Artificial Intelligence was used in this file to : debug errors
+
 import cv2
 import numpy as np
 from camera import Camera

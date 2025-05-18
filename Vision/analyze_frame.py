@@ -1,3 +1,6 @@
+# Artificial Intelligence was used in this file to : debug errors, research threading
+
+
 import cv2
 import numpy as np
 import json

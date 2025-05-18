@@ -1,3 +1,5 @@
+# Artificial Intelligence was used in this file to : debug errors, and verify FOV calculations
+
 from logging import PlaceHolder
 import math
 import numpy as np

@@ -1,3 +1,5 @@
+# Artificial Intelligence was used in this file to : debug errors, research TCP, and previously serial communication.
+
 import socket
 import sys
 import errno
