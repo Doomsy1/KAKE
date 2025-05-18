@@ -1,0 +1,150 @@
+# Artificial Intelligence was used in this file to : debug errors, research TCP, and previously serial communication.
+
+import socket
+import sys
+import errno
+import time
+import os
+import select
+import threading
+import queue
+import random
+
+from generate_data_points import generate_data
+
+def bytes_to_string(data):
+    """Convert bytes to string, handling different encodings."""
+    try:
+        # Try UTF-8 first
+        return data.decode('utf-8')
+    except UnicodeDecodeError:
+        try:
+            # Try ASCII if UTF-8 fails
+            return data.decode('ascii')
+        except UnicodeDecodeError:
+            # If both fail, return a hex representation
+            return f"<hex: {data.hex()}>"
+        
+
+
+example_data = "[0, 1], [int], [int], [float], [float], [float] | [0, 1], [int], [int], [float], [float], [float]"
+data1 = "[1], 1020, 569, [20.3], [102.1], [151.1]"
+#make a function that will generate data in this format. it's a string, with points separated by commas. each data value is contained within square brackets. there may be up to 2 points per string. the two points will be separatted by |.
+
+
+class TCPClient:
+    def __init__(self, host='10.249.222.198', port=55000):
+        self.host = host
+        self.port = port
+        self.socket = None
+        self.running = False
+        self.send_queue = queue.Queue()
+        self.receive_queue = queue.Queue()
+        self.lock = threading.Lock()
+
+    def connect(self):
+        try:
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            
+            print(f"Connecting to {self.host}:{self.port}")
+            self.socket.connect((self.host, self.port))
+            print("Connected to server.")
+            self.running = True
+            return True
+        except Exception as e:
+            print(f"Connection error: {e}")
+            return False
+
+    def send_messages(self):
+        """Thread function for sending messages"""
+        while self.running:
+            try:
+                # Get message from queue
+                message = self.send_queue.get(timeout=1.0)
+                if message == "QUIT":
+                    break
+                
+                # Send the message
+                with self.lock:
+                    self.socket.sendall((message + '\n').encode('utf-8'))
+                print(f"Sent: {message}")
+            except queue.Empty:
+                continue
+            except Exception as e:
+                print(f"Send error: {e}")
+                self.running = False
+                break
+
+    def receive_messages(self):
+        """Thread function for receiving messages"""
+        while self.running:
+            try:
+                # Check if data is available
+                ready = select.select([self.socket], [], [], 1.0)
+                if ready[0]:
+                    with self.lock:
+                        data = self.socket.recv(1024)
+                    
+                    if data:
+                        try:
+                            message = data.decode('utf-8').strip()
+                            print(f"Received: {message}")
+                            self.receive_queue.put(message)
+                        except UnicodeDecodeError:
+                            print(f"Error decoding message: {data}")
+                    else:
+                        print("Server closed connection")
+                        self.running = False
+                        break
+            except Exception as e:
+                print(f"Receive error: {e}")
+                self.running = False
+                break
+
+    def start(self):
+        """Start the client with separate threads for sending and receiving"""
+        if not self.connect():
+            print("Failed to connect to server")
+            return
+
+        # Create and start threads
+        send_thread = threading.Thread(target=self.send_messages)
+        receive_thread = threading.Thread(target=self.receive_messages)
+        
+        send_thread.daemon = True
+        receive_thread.daemon = True
+        
+        send_thread.start()
+        receive_thread.start()
+
+        try:
+            while self.running:
+                message = input("Enter message (or 'quit' to exit): ")
+                if message.lower() == 'quit':
+                    self.send_queue.put("QUIT")
+                    break
+                if message == "random":
+                    message = generate_data(random.randint(1, 2))
+                self.send_queue.put(message)
+                
+        except KeyboardInterrupt:
+            print("\nShutting down...")
+        finally:
+            self.running = False
+            if self.socket:
+                try:
+                    self.socket.shutdown(socket.SHUT_RDWR)
+                except:
+                    pass
+                self.socket.close()
+            print("Connection closed.")
+
+def main():
+    client = TCPClient()
+    client.start()
+
+if __name__ == "__main__":
+    main()
+    # print(generate_data(random.randint(1, 2)))
